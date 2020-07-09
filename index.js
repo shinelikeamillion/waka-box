@@ -17,6 +17,27 @@ async function main() {
   await updateGist(stats);
 }
 
+function getLines(stats) {
+  const lines = [];
+  for (let i = 0; i < Math.min(stats.data.languages.length, 5); i++) {
+    const data = stats.data.languages[i];
+    const { name, percent, text: time } = data;
+
+    const line = [
+      name.length > 14 ? `${name.substring(0, 8)}...` : name.padEnd(11),
+      time
+        .replace(/hrs?/g, "h")
+        .replace(/mins?/g, "m")
+        .padEnd(9),
+      generateBarChart(percent, 21),
+      String(percent.toFixed(1)).padStart(5) + "%"
+    ];
+
+    lines.push(line.join(" "));
+  }
+  return lines.join("\n");
+}
+
 async function updateGist(stats) {
   let gist;
   try {
@@ -25,21 +46,7 @@ async function updateGist(stats) {
     console.error(`Unable to get gist\n${error}`);
   }
 
-  const lines = [];
-  for (let i = 0; i < Math.min(stats.data.languages.length, 5); i++) {
-    const data = stats.data.languages[i];
-    const { name, percent, text: time } = data;
-
-    const line = [
-      name.padEnd(11),
-      time.padEnd(14),
-      generateBarChart(percent, 21),
-      String(percent.toFixed(1)).padStart(5) + "%"
-    ];
-
-    lines.push(line.join(" "));
-  }
-
+  const lines = getLines(stats);
   if (lines.length == 0) return;
 
   try {
@@ -49,8 +56,8 @@ async function updateGist(stats) {
       gist_id: gistId,
       files: {
         [filename]: {
-          filename: `📊 Weekly development breakdown`,
-          content: lines.join("\n")
+          filename: `Weekly development breakdown`,
+          content: lines
         }
       }
     });
