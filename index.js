@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const { WakaTimeClient, RANGE } = require("wakatime-client");
 const Octokit = require("@octokit/rest");
 
@@ -14,7 +15,10 @@ const octokit = new Octokit({ auth: `token ${githubToken}` });
 
 async function main() {
   const stats = await wakatime.getMyStats({ range: RANGE.LAST_7_DAYS });
-  await updateGist(stats);
+  const lines = getLines(stats);
+  // console.log(lines)
+  await updateGist(lines);
+  await addCommentToGithubPage(lines);
 }
 
 function getLines(stats) {
@@ -38,7 +42,8 @@ function getLines(stats) {
   return lines.join("\n");
 }
 
-async function updateGist(stats) {
+async function updateGist(lines) {
+  if (lines.length == 0) return;
   let gist;
   try {
     gist = await octokit.gists.get({ gist_id: gistId });
@@ -46,17 +51,16 @@ async function updateGist(stats) {
     console.error(`Unable to get gist\n${error}`);
   }
 
-  const lines = getLines(stats);
-  if (lines.length == 0) return;
-
   try {
     // Get original filename to update that same file
     const filename = Object.keys(gist.data.files)[0];
+    const content = gist.data.files[filename].content;
+    if (lines == content) return;
     await octokit.gists.update({
       gist_id: gistId,
       files: {
         [filename]: {
-          filename: `Weekly development breakdown`,
+          filename: filename,
           content: lines
         }
       }
@@ -64,6 +68,21 @@ async function updateGist(stats) {
   } catch (error) {
     console.error(`Unable to update gist\n${error}`);
   }
+}
+
+async function addCommentToGithubPage(lines) {
+  await octokit.request(
+    "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+    {
+      owner: "shinelikeamillion",
+      repo: "shinelikeamillion.github.io",
+      issue_number: "6",
+      body: lines,
+      headers: {
+        "X-GitHub-Api-Version": "2022-11-28"
+      }
+    }
+  );
 }
 
 function generateBarChart(percent, size) {
@@ -76,9 +95,14 @@ function generateBarChart(percent, size) {
   }
   const semi = frac % 8;
 
-  return [syms.substring(8, 9).repeat(barsFull), syms.substring(semi, semi + 1)]
+  const result = [
+    syms.substring(8, 9).repeat(barsFull),
+    syms.substring(semi, semi + 1)
+  ]
     .join("")
     .padEnd(size, syms.substring(0, 1));
+
+  return result;
 }
 
 (async () => {
