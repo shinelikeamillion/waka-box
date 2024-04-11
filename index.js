@@ -17,8 +17,8 @@ async function main() {
   const stats = await wakatime.getMyStats({ range: RANGE.LAST_7_DAYS });
   const lines = getLines(stats);
   console.log(lines);
-  await updateGist(lines);
   await addCommentToGithubPage(lines);
+  await updateGist(lines.join("\n"));
 }
 
 function getLines(stats) {
@@ -39,7 +39,7 @@ function getLines(stats) {
 
     lines.push(line.join(" "));
   }
-  return lines.join("\n");
+  return lines;
 }
 
 async function updateGist(lines) {
