@@ -71,19 +71,23 @@ async function updateGist(lines) {
 }
 
 async function addCommentToGithubPage(lines) {
-  const formatLines = ["```markdown", ...lines, "```"].join("\n");
-  await octokit.request(
-    "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
-    {
-      owner: "shinelikeamillion",
-      repo: "shinelikeamillion.github.io",
-      issue_number: "6",
-      body: lines,
-      headers: {
-        "X-GitHub-Api-Version": "2022-11-28"
+  try {
+    const formatLines = ["```markdown", ...lines, "```"].join("\n");
+    await octokit.request(
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      {
+        owner: "shinelikeamillion",
+        repo: "shinelikeamillion.github.io",
+        issue_number: "6",
+        body: formatLines,
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
       }
-    }
-  );
+    );
+  } catch (error) {
+    console.error(`Can not add a comment\n${error}`);
+  }
 }
 
 function generateBarChart(percent, size) {

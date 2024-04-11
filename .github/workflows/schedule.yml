@@ -12,5 +12,5 @@ jobs:
         uses: ./.github/
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GIST_ID: 1c7dd49583d9b24af05f2b1cbfab554a
+          GIST_ID: ${{secrets.GIST_ID}}
           WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
