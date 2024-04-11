@@ -71,6 +71,7 @@ async function updateGist(lines) {
 }
 
 async function addCommentToGithubPage(lines) {
+  const formatLines = ["```markdown", ...lines, "```"].join("\n");
   await octokit.request(
     "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
     {
