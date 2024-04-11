@@ -16,7 +16,7 @@ const octokit = new Octokit({ auth: `token ${githubToken}` });
 async function main() {
   const stats = await wakatime.getMyStats({ range: RANGE.LAST_7_DAYS });
   const lines = getLines(stats);
-  // console.log(lines)
+  console.log(lines);
   await updateGist(lines);
   await addCommentToGithubPage(lines);
 }
@@ -73,7 +73,7 @@ async function updateGist(lines) {
 async function addCommentToGithubPage(lines) {
   try {
     const formatLines = ["```markdown", ...lines, "```"].join("\n");
-    await octokit.request(
+    const response = await octokit.request(
       "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
       {
         owner: "shinelikeamillion",
@@ -85,6 +85,7 @@ async function addCommentToGithubPage(lines) {
         }
       }
     );
+    console.log("octokit: ", response);
   } catch (error) {
     console.error(`Can not add a comment\n${error}`);
   }
