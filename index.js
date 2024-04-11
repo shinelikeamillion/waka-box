@@ -73,18 +73,25 @@ async function updateGist(lines) {
 async function addCommentToGithubPage(lines) {
   try {
     const formatLines = ["```markdown", ...lines, "```"].join("\n");
-    const response = await octokit.request(
-      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
-      {
-        owner: "shinelikeamillion",
-        repo: "shinelikeamillion.github.io",
-        issue_number: "6",
-        body: formatLines,
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28"
-        }
-      }
-    );
+    const response = await octokit.issues.createComment({
+      owner: "shinelikeamillion",
+      repo: "shinelikeamillion.github.io",
+      issue_number: "6",
+      body: formatLines
+    });
+
+    // const response = await octokit.request(
+    //   "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+    //   {
+    //     owner: "shinelikeamillion",
+    //     repo: "shinelikeamillion.github.io",
+    //     issue_number: "6",
+    //     body: formatLines,
+    //     headers: {
+    //       "X-GitHub-Api-Version": "2022-11-28"
+    //     }
+    //   }
+    // );
     console.log("octokit: ", response);
   } catch (error) {
     console.error(`Can not add a comment\n${error}`);
